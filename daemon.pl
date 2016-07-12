@@ -9,13 +9,13 @@ use Thread::Semaphore;
 use File::Basename;
 my $semaphore = new Thread::Semaphore;
 #CONFIGURATION SECTION
-#my @allowedhosts = ('127.0.0.1', '10.0.0.1');
+my @allowedhosts = ('127.0.0.1');
 my $LOGFILE = "/var/log/ardeekpolicyd2.log";
 chomp( my $vhost_dir = `pwd`);
-my $port = 381;
-my $listen_address = '0.0.0.0';
+my $port = 10081;
+my $listen_address = '127.0.0.1';
 my $s_key_type = 'domain'; #domain or email
-my $dsn = "DBI:mysql:DBNAME:127.0.0.1";
+my $dsn = "DBI:mysql:send-rate-policyd:127.0.0.1";
 my $db_user = '*********';
 my $db_passwd = '***************';
 my $db_table = 'domains';
@@ -29,6 +29,8 @@ my $sql_updatequota = "UPDATE $db_table SET $db_tallycol = $db_tallycol + ? WHER
 my $sql_resetquota = "UPDATE $db_table SET $db_tallycol = 0 , $db_timecol = ? WHERE $db_wherecol = ?";
 #END OF CONFIGURATION SECTION
 $0=join(' ',($0,@ARGV));
+load_config('./database.conf');
+
 
 if($ARGV[0] eq "printshm"){
 	my $out = `echo "printshm"|nc $listen_address $port`;
@@ -338,6 +340,34 @@ sub logger {
 	my $time = localtime();
 	chomp($time);
 	print LOG  "$time $arg\n";
+}
+
+# if the config exists override globals $db_user and $db_passwd
+sub load_config {
+  my ($fname) = @_;
+  my $val;
+ 
+  if(-f $fname) {
+    open my $f, "<$fname" || die;
+    while(my $l = <$f>) {
+      # skip comment and blank line
+      next if $l =~ /^\s*#/;
+      next if $l =~ /^\s*$/;
+
+      if($l =~ /^db_user\s*=\s*(.+)/) {
+        $val = $1;
+        chomp $val;
+        $db_user = $val;
+      }
+      if($l =~ /^db_passwd\s*=\s*(.+)/) {
+        $val = $1;
+        chomp $val;
+        $db_passwd = $val;
+      }
+
+    }
+    close $f;
+  }
 }
 
 

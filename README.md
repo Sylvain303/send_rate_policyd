@@ -7,6 +7,8 @@ For INSTALL doc refer to http://www.simonecaruso.com/limit-sender-rate-in-postfi
 
 ## Create Table
 
+See: `emails.sql`
+
 ~~~sql
 CREATE TABLE  `emails` (
     `email` VARCHAR(65) NOT NULL,
@@ -16,6 +18,8 @@ CREATE TABLE  `emails` (
     );
 ~~~
 
+## perl module dependancy
+Switch.pm - 
 
 ## Postfix send rate limit per user/domain
 
